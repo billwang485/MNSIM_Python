@@ -95,9 +95,19 @@ def transfer_awnas_state_dict(cand_net):
     output: MNSIM.NetGraph.state_dict
     """
     mnsim_cfg = cand_net.get_mnsim_cfg()
-    param_list = list()
     param_list = cand_net.weights_manager._param_list
-    # stage1: extract param_list from cand_net,add the missing to param_list
+    # stage1: extract param_list from cand_net, add the missing to param_list
+    assert len(mnsim_cfg) == len(param_list), \
+        "mnsim_cfg should have the same length with param_list"
+    for cfg, param in zip(mnsim_cfg, param_list):
+        param.update({
+            "last_value": torch.FloatTensor([
+                        mnsim_cfg[i]["output"][1]
+                        if mnsim_cfg[i]["output"][1] is not None
+                        else 1
+            ])
+        })
+        pass
     for i in range(len(param_list)):
         param_list[i].update(
             {
